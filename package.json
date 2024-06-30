@@ -1,0 +1,43 @@
+{
+  "name": "envflags",
+  "description": "Flags based on environment variables",
+  "version": "0.0.2",
+  "main": "dist/impl.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "homepage": "https://github.com/spudtrooper/envflags#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spudtrooper/envflags.git"
+  },
+  "scripts": {
+    "build": "yarn clean && mkdir -p dist && yarn tsc -d --outDir dist",
+    "clean": "rm -rf dist",
+    "clean-fresh": "yarn clean && yarn uninstall",
+    "test-fresh": "yarn clean-fresh && yarn install && yarn test",
+    "test": "yarn jest",
+    "test-all": "yarn test && yarn test-integ",
+    "test-integ": "echo TODO",
+    "precommit": "yarn build && yarn test-all",
+    "prepush": "yarn build && yarn test-all",
+    "commit": "./scripts/commit.sh",
+    "push": "./scripts/push.sh",
+    "uninstall": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@types/parse-duration": "^0.3.0",
+    "dayjs": "^1.11.10",
+    "esbuild": "^0.14.48",
+    "jest": "^29.7.0",
+    "parse-duration": "^1.1.0",
+    "ts-jest": "^29.1.1"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.23.3",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^18.0.3",
+    "tsc": "^2.0.4",
+    "typescript": "^4.7.4"
+  }
+}
