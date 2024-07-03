@@ -1,54 +1,44 @@
-import { type Ctor, Props, ValidValue } from "./types";
+import { type Ctor, Props, ValidValue, ValidType } from "./types";
 
 const globalDebug = ["1", "true"].includes(process.env.ENV_FLAG_DEBUG || "");
 
-class Flag<T extends ValidValue> {
-  private readonly defaultValue: T;
-  private readonly name: string;
+export class Flag<T extends ValidValue> {
+  public readonly defaultValue: T;
+  public readonly name: string;
   private readonly debug: boolean;
+
+  public readonly value: T;
+  public readonly type: ValidType;
 
   constructor({
     name,
     defaultValue,
+    cast,
     debug = false,
+    value,
   }: {
     name: string;
     defaultValue: T;
+    cast: (s: string) => T;
     debug: boolean;
+    value?: string | null,
   }) {
     this.name = name;
     this.defaultValue = defaultValue;
     this.debug = debug;
+    this.value = value ? cast(value) : Flag.getValue(this.name, this.defaultValue, cast);
+    this.type = (typeof this.defaultValue) as ValidType;
 
-    this.cast(String(defaultValue));
-
-    if (debug) {
-      console.log(`ENV_FLAG[${name}] create, defaultValue=${defaultValue} value=${this._value()}`);
-    }
-  }
-
-  protected cast(s: string): T {
-    throw new Error("cast ot implemented");
-  }
-
-  get value() {
-    return this._value();
-  }
-
-  private _value() {
-    const s = process.env[this.name];
-    if (s !== undefined) {
-      const res = this.cast(s);
-      if (this.debug) {
-        console.log(`ENV_FLAG[${this.name}] value (from env) => ${res}`);
-      }
-      return res;
-    }
-    const res = this.defaultValue;
     if (this.debug) {
-      console.log(`ENV_FLAG[${this.name}] value (from default) => ${res}`);
+      console.log(`ENV_FLAG[${name}] create, defaultValue=${defaultValue} value=${this.value}`);
     }
-    return res;
+
+  }
+
+  private static getValue<T extends ValidValue>(name: string, defaultValue: T, cast: (s: string) => T): T {
+    // TODO: This dones't work, need to explicitliy use process.env.NEXT_PUBLIC_....
+    const s = process.env[name];
+    return s !== undefined ? cast(s) : defaultValue;
   }
 }
 
@@ -57,12 +47,10 @@ class StringFlag extends Flag<string> {
     super({
       name: props.name,
       defaultValue: props.defaultValue !== undefined ? props.defaultValue : "",
+      cast: (s: string) => s,
       debug: !!(props.debug || globalDebug),
+      value: props.value,
     });
-  }
-
-  protected cast(s: string): string {
-    return s;
   }
 }
 
@@ -71,12 +59,10 @@ class BooleanFlag extends Flag<boolean> {
     super({
       name: props.name,
       defaultValue: props.defaultValue !== undefined ? props.defaultValue : false,
+      cast: (s: string) => ["1", "true"].includes(s),
       debug: !!(props.debug || globalDebug),
+      value: props.value,
     });
-  }
-
-  protected cast(s: string): boolean {
-    return ["1", "true"].includes(s);
   }
 }
 
@@ -85,12 +71,10 @@ class NumberFlag extends Flag<number> {
     super({
       name: props.name,
       defaultValue: props.defaultValue !== undefined ? props.defaultValue : 0,
+      cast: (s: string) => Number(s),
       debug: !!(props.debug || globalDebug),
+      value: props.value,
     });
-  }
-
-  protected cast(s: string): number {
-    return Number(s);
   }
 }
 

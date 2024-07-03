@@ -1,7 +1,7 @@
 {
   "name": "envflags",
   "description": "Flags based on environment variables",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/impl.js",
   "types": "dist/index.d.ts",
   "license": "MIT",

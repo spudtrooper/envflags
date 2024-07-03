@@ -2,14 +2,13 @@
 import { mock } from "node:test";
 import { newString, newBoolean, newNumber } from "./impl";
 
-const originalEnv = process.env;
 
 describe("impl", () => {
+  const originalEnv = process.env;
+
   beforeEach(() => {
     jest.resetModules();
-    process.env = {
-      ...originalEnv,
-    };
+    process.env = {};
   });
 
   afterEach(() => {
@@ -18,7 +17,7 @@ describe("impl", () => {
 
   const mockEnv = (env: Record<string, string>) => {
     process.env = {
-      ...process.env,
+      ...originalEnv,
       ...env,
     };
   };
@@ -44,6 +43,11 @@ describe("impl", () => {
     mockEnv({ "FLAG__STRING": "newValue" });
     const f = newString({ name: "FLAG__STRING", defaultValue: "theDefaultValue" });
     expect(f.value).toEqual("newValue");
+  });
+  it("string: set from value", () => {
+    mockEnv({ "FLAG__STRING": "newValue" });
+    const f = newString({ name: "FLAG__STRING", defaultValue: "theDefaultValue", value: "theValue" });
+    expect(f.value).toEqual("theValue");
   });
 
   it("boolean: no default value", () => {
@@ -73,6 +77,11 @@ describe("impl", () => {
     const f = newBoolean({ name: "FLAG__BOOLEAN", defaultValue: true });
     expect(f.value).toEqual(false);
   });
+  it("boolean: set from value", () => {
+    mockEnv({ "FLAG__BOOLEAN": "false" });
+    const f = newBoolean({ name: "FLAG__BOOLEAN", defaultValue: false, value: "true" });
+    expect(f.value).toEqual(true);
+  });
 
   it("number: no default value", () => {
     const f = newNumber({ name: "FLAG__NUMBER" });
@@ -95,5 +104,10 @@ describe("impl", () => {
     mockEnv({ "FLAG__NUMBER": "1" });
     const f = newNumber({ name: "FLAG__NUMBER", defaultValue: 3 });
     expect(f.value).toEqual(1);
+  });
+  it("number: set from value", () => {
+    mockEnv({ "FLAG__NUMBER": "1" });
+    const f = newNumber({ name: "FLAG__NUMBER", defaultValue: 3, value: "5" });
+    expect(f.value).toEqual(5);
   });
 });
