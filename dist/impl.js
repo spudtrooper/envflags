@@ -15,58 +15,39 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.newBoolean = exports.newNumber = exports.newString = void 0;
+exports.newBoolean = exports.newNumber = exports.newString = exports.Flag = void 0;
 var globalDebug = ["1", "true"].includes(process.env.ENV_FLAG_DEBUG || "");
 var Flag = /** @class */ (function () {
     function Flag(_a) {
-        var name = _a.name, defaultValue = _a.defaultValue, _b = _a.debug, debug = _b === void 0 ? false : _b;
+        var name = _a.name, defaultValue = _a.defaultValue, cast = _a.cast, _b = _a.debug, debug = _b === void 0 ? false : _b, value = _a.value;
         this.name = name;
         this.defaultValue = defaultValue;
         this.debug = debug;
-        this.cast(String(defaultValue));
-        if (debug) {
-            console.log("ENV_FLAG[".concat(name, "] create, defaultValue=").concat(defaultValue, " value=").concat(this._value()));
+        this.value = value ? cast(value) : Flag.getValue(this.name, this.defaultValue, cast);
+        this.type = (typeof this.defaultValue);
+        if (this.debug) {
+            console.log("ENV_FLAG[".concat(name, "] create, defaultValue=").concat(defaultValue, " value=").concat(this.value));
         }
     }
-    Flag.prototype.cast = function (s) {
-        throw new Error("cast ot implemented");
-    };
-    Object.defineProperty(Flag.prototype, "value", {
-        get: function () {
-            return this._value();
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Flag.prototype._value = function () {
-        var s = process.env[this.name];
-        if (s !== undefined) {
-            var res_1 = this.cast(s);
-            if (this.debug) {
-                console.log("ENV_FLAG[".concat(this.name, "] value (from env) => ").concat(res_1));
-            }
-            return res_1;
-        }
-        var res = this.defaultValue;
-        if (this.debug) {
-            console.log("ENV_FLAG[".concat(this.name, "] value (from default) => ").concat(res));
-        }
-        return res;
+    Flag.getValue = function (name, defaultValue, cast) {
+        // TODO: This dones't work, need to explicitliy use process.env.NEXT_PUBLIC_....
+        var s = process.env[name];
+        return s !== undefined ? cast(s) : defaultValue;
     };
     return Flag;
 }());
+exports.Flag = Flag;
 var StringFlag = /** @class */ (function (_super) {
     __extends(StringFlag, _super);
     function StringFlag(props) {
         return _super.call(this, {
             name: props.name,
             defaultValue: props.defaultValue !== undefined ? props.defaultValue : "",
+            cast: function (s) { return s; },
             debug: !!(props.debug || globalDebug),
+            value: props.value,
         }) || this;
     }
-    StringFlag.prototype.cast = function (s) {
-        return s;
-    };
     return StringFlag;
 }(Flag));
 var BooleanFlag = /** @class */ (function (_super) {
@@ -75,12 +56,11 @@ var BooleanFlag = /** @class */ (function (_super) {
         return _super.call(this, {
             name: props.name,
             defaultValue: props.defaultValue !== undefined ? props.defaultValue : false,
+            cast: function (s) { return ["1", "true"].includes(s); },
             debug: !!(props.debug || globalDebug),
+            value: props.value,
         }) || this;
     }
-    BooleanFlag.prototype.cast = function (s) {
-        return ["1", "true"].includes(s);
-    };
     return BooleanFlag;
 }(Flag));
 var NumberFlag = /** @class */ (function (_super) {
@@ -89,12 +69,11 @@ var NumberFlag = /** @class */ (function (_super) {
         return _super.call(this, {
             name: props.name,
             defaultValue: props.defaultValue !== undefined ? props.defaultValue : 0,
+            cast: function (s) { return Number(s); },
             debug: !!(props.debug || globalDebug),
+            value: props.value,
         }) || this;
     }
-    NumberFlag.prototype.cast = function (s) {
-        return Number(s);
-    };
     return NumberFlag;
 }(Flag));
 var newString = function (props) { return new StringFlag(props); };
